@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+    arches_db:
+      container_name: postgres14-3_arches7-5
+      image: postgis/postgis:14-3.2
+      volumes:
+          - postgres-data-arches7.0:/var/lib/postgresql
+          - postgres-log-arches7.0:/var/log/postgresql
+          - ./init-unix.sql:/docker-entrypoint-initdb.d/init.sql # to set up the DB template
+      ports:
+        - '5434:5432'
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgis
+        - POSTGRES_DB=postgres
+        - POSTGRES_MULTIPLE_EXTENSIONS=postgis,postgis_topology
+        - TZ=PST
+      networks:
+        - arches7-5-dev
+
+    arches_elasticsearch:
+      container_name: elasticsearch8-3_arches7-5
+      image: elasticsearch:8.3.1
+      volumes:
+        - elasticsearch-data-arches7.0:/usr/share/elasticsearch/data
+      ports:
+        - "9202:9200"
+        - "9302:9300"
+      environment:
+        - TZ=PST
+        - xpack.security.enabled=false
+        - discovery.type=single-node
+        - "ES_JAVA_OPTS=-Xms400m -Xmx400m"
+      networks:
+        - arches7-5-dev
+
+    arches_rabbitmq:
+      container_name: rabbitmq3_arches7-5
+      image: rabbitmq:3-management
+      hostname: my-rabbit
+      volumes:
+        - rabbitmq-data-arches7.0:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+        - rabbitmq-logs-arches7.0:/var/log/rabbitmq/log
+      ports:
+        - 5674:5672
+        - 15674:15672
+      networks:
+        - arches7-5-dev
+
+networks:
+  arches7-5-dev:
+    name: arches7-5-dev
+    driver: bridge
+
+volumes:
+    couchdb-data-arches7.0:
+    couchdb-log-arches7.0:
+    postgres-data-arches7.0:
+    postgres-log-arches7.0:
+    elasticsearch-data-arches7.0:
+    elasticsearch-upgrade-data-arches7.0:
+    rabbitmq-logs-arches7.0:
+    rabbitmq-data-arches7.0:
