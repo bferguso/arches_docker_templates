@@ -4,8 +4,8 @@ services:
       container_name: postgres14-3_arches7-5
       image: postgis/postgis:14-3.2
       volumes:
-          - postgres-data-arches7.0:/var/lib/postgresql
-          - postgres-log-arches7.0:/var/log/postgresql
+          - postgres-data-arches7.5:/var/lib/postgresql
+          - postgres-log-arches7.5:/var/log/postgresql
           - ./init-unix.sql:/docker-entrypoint-initdb.d/init.sql # to set up the DB template
       ports:
         - '5434:5432'
@@ -22,7 +22,7 @@ services:
       container_name: elasticsearch8-3_arches7-5
       image: elasticsearch:8.3.1
       volumes:
-        - elasticsearch-data-arches7.0:/usr/share/elasticsearch/data
+        - elasticsearch-data-arches7.5:/usr/share/elasticsearch/data
       ports:
         - "9202:9200"
         - "9302:9300"
@@ -31,6 +31,7 @@ services:
         - xpack.security.enabled=false
         - discovery.type=single-node
         - "ES_JAVA_OPTS=-Xms400m -Xmx400m"
+        - cluster.routing.allocation.disk.threshold_enabled=false
       networks:
         - arches7-5-dev
 
@@ -39,11 +40,28 @@ services:
       image: rabbitmq:3-management
       hostname: my-rabbit
       volumes:
-        - rabbitmq-data-arches7.0:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
-        - rabbitmq-logs-arches7.0:/var/log/rabbitmq/log
+        - rabbitmq-data-arches7.5:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+        - rabbitmq-logs-arches7.5:/var/log/rabbitmq/log
       ports:
         - 5674:5672
         - 15674:15672
+      networks:
+        - arches7-5-dev
+
+    arches_redis:
+      container_name: redis_arches7-5
+      image: "redis:6-alpine"
+      restart: always
+      ports:
+        - "6380:6379"
+      volumes:
+        - "redisdata7.5:/data"
+      command: "redis-server"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10k"
+          max-file: "10"
       networks:
         - arches7-5-dev
 
@@ -53,11 +71,12 @@ networks:
     driver: bridge
 
 volumes:
-    couchdb-data-arches7.0:
-    couchdb-log-arches7.0:
-    postgres-data-arches7.0:
-    postgres-log-arches7.0:
-    elasticsearch-data-arches7.0:
-    elasticsearch-upgrade-data-arches7.0:
-    rabbitmq-logs-arches7.0:
-    rabbitmq-data-arches7.0:
+    couchdb-data-arches7.5:
+    couchdb-log-arches7.5:
+    postgres-data-arches7.5:
+    postgres-log-arches7.5:
+    elasticsearch-data-arches7.5:
+    elasticsearch-upgrade-data-arches7.5:
+    rabbitmq-logs-arches7.5:
+    rabbitmq-data-arches7.5:
+    redisdata7.5:
