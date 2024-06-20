@@ -1,0 +1,77 @@
+version: '3.8'
+services:
+    arches_db:
+      container_name: postgres14-3_arches6-2
+      image: postgis/postgis:14-3.2
+      volumes:
+          - postgres-data-arches6.2:/var/lib/postgresql
+          - postgres-log-arches6.2:/var/log/postgresql
+          - ./init-unix.sql:/docker-entrypoint-initdb.d/init.sql # to set up the DB template
+      ports:
+        - '5433:5432'
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgis
+        - POSTGRES_DB=postgres
+        - POSTGRES_MULTIPLE_EXTENSIONS=postgis,postgis_topology
+        - TZ=PST
+      networks:
+        - arches6-2-dev
+
+    arches_couchdb:
+      container_name: couchdb2-1_arches6-2
+      image: couchdb:2.1.1
+      ports:
+        - "5985:5984"
+      volumes:
+        - couchdb-data-arches6.2:/usr/local/var/lib/couchdb
+        - couchdb-log-arches6.2:/usr/local/var/log/couchdb
+      environment:
+        - COUCHDB_USER=admin
+        - COUCHDB_PASSWORD=password
+      networks:
+        - arches6-2-dev
+
+    arches_elasticsearch:
+      container_name: elasticsearch7-9_arches6-2
+      image: elasticsearch:7.9.2
+      volumes:
+        - elasticsearch-data-arches6.2:/usr/share/elasticsearch/data
+      ports:
+        - "9201:9200"
+        - "9301:9300"
+      environment:
+        - TZ=PST
+        - discovery.type=single-node
+        - discovery.seed_hosts=
+        - "ES_JAVA_OPTS=-Xms400m -Xmx400m"
+      networks:
+        - arches6-2-dev
+
+    arches_rabbitmq:
+      container_name: rabbitmq3_arches6-2
+      image: rabbitmq:3-management
+      hostname: my-rabbit
+      volumes:
+        - rabbitmq-data-arches6.2:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+        - rabbitmq-logs-arches6.2:/var/log/rabbitmq/log
+      ports:
+        - 5673:5672
+        - 15673:15672
+      networks:
+        - arches6-2-dev
+
+networks:
+  arches6-2-dev:
+    name: arches6-2-dev
+    driver: bridge
+
+volumes:
+    couchdb-data-arches6.2:
+    couchdb-log-arches6.2:
+    postgres-data-arches6.2:
+    postgres-log-arches6.2:
+    elasticsearch-data-arches6.2:
+    elasticsearch-upgrade-data-arches6.2:
+    rabbitmq-logs-arches6.2:
+    rabbitmq-data-arches6.2:
